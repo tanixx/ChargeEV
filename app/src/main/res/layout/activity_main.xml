@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <androidx.fragment.app.FragmentContainerView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:name="com.google.android.gms.maps.SupportMapFragment"
+        android:id="@+id/mapFragment"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <LinearLayout
+        android:layout_width="350dp"
+        android:orientation="horizontal"
+        android:padding="16dp"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity"
+        tools:ignore="MissingConstraints">
+    <Spinner
+        android:background="@color/quantum_grey"
+        android:layout_width="0dp"
+        android:layout_height="30dp"
+        android:layout_weight="0.7"
+        android:id="@+id/sp_city"
+        android:layout_marginEnd="4dp"
+        tools:listitem="@layout/item_dropdown"
+        />
+    <!-- Drop down number 2-->
+    <Spinner
+        android:background="@color/quantum_grey"
+        android:layout_width="0dp"
+        android:layout_height="30dp"
+        android:layout_weight="0.7"
+        android:id="@+id/sp_location"
+        android:layout_marginStart="4dp"
+        tools:listitem="@layout/item_dropdown"
+        />
+    </LinearLayout>
+    <ImageButton
+        android:id="@+id/mapOptionMenu"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="70dp"
+        android:layout_marginEnd="2dp"
+        android:src="@drawable/menu"
+        android:background="@null"
+        android:scaleType="fitXY"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:contentDescription="@string/image" />
+
+    <Button
+        android:id="@+id/showLocationButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Stations around"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginBottom="100dp"
+        android:layout_marginStart="20dp"/>
+
+    <Button
+        android:id="@+id/nearbyButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Nearby Stations"
+        app:layout_constraintTop_toBottomOf="@+id/showLocationButton"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginStart="20dp"
+        android:layout_marginBottom="8dp"/>
+
+
+
+
+
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
