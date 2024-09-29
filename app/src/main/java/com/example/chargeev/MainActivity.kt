@@ -9,19 +9,9 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.content.pm.PackageManager
-
-
-import com.google.android.gms.maps.model.Polyline
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
-import android.graphics.Color
 import android.location.Location
-import android.os.AsyncTask
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.PopupMenu
@@ -31,9 +21,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import com.google.android.gms.common.api.Status
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LastLocationRequest
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -42,73 +31,77 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
-import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
-import com.google.android.gms.maps.model.PolylineOptions
 import com.google.android.libraries.places.api.Places
-import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.widget.AutocompleteSupportFragment
-import com.google.android.libraries.places.widget.listener.PlaceSelectionListener
-import com.google.gson.Gson
 import com.google.maps.android.SphericalUtil
-import com.squareup.okhttp.OkHttpClient
-import com.squareup.okhttp.Request
 import kotlin.math.roundToInt
 
 class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerClickListener {
 
     private var mGoogleMap: GoogleMap? = null
-
-
-
-
-
-
-
     private val locations = listOf(
-
-        LatLng(22.765208695455254, 75.88113906279146),
-        LatLng(22.728994743882918, 75.86340480365216),
-        LatLng(22.727087510617746, 75.86740206608323),
-        LatLng(22.65581289676637, 75.81995285178748),
-        LatLng(22.723160020724, 75.86926451858919),
-        LatLng(22.735024755300635, 75.87396794647482),
-        LatLng(22.718857486301516, 75.87141338512374),
-        LatLng(22.727224991583977, 75.86757711779106),
-        LatLng(22.74495504957366, 75.88367558630804),
-        LatLng(22.758531900609633, 75.90025945474241),
-        LatLng(22.756659311719222, 75.88689082610654),
-        LatLng(22.754474592233166, 75.882491024277),
-        LatLng(22.74589142744026, 75.88418325574992),
-        LatLng(22.73168900733087, 75.89315208255626),
-        LatLng(22.732781553564706, 75.8892599501686),
-        LatLng(22.732313320533294, 75.8951827603237),
-        LatLng(22.731064691278387, 75.86286113919144),
-        LatLng(22.71284453623902, 75.88022620871433),
-        LatLng(22.71549265177447, 75.88373492084955),
-        LatLng(22.720715173908165, 75.87990723488385),
-        LatLng(22.72152427922375, 75.847451647633),
-        LatLng(22.718582055142996, 75.84067345373539)
+        LatLng(22.72931744966455, 75.86334920016742),
+        LatLng(22.727773721130557, 75.86742615778944),
+        LatLng(22.714731712192407, 75.88433771465213),
+        LatLng(22.717086037558957, 75.84087599897448),
+        LatLng(22.737158803471615, 75.87081697282667),
+    LatLng(22.75513595140915, 75.88604515378142),
+    LatLng(22.73088976610597, 75.8893107844682),
+    LatLng(22.7205593367236, 75.84741272679648),
+    LatLng(22.711486302110444, 75.85601326912477),
+    LatLng(22.69548195427431, 75.85512854213988),
+    LatLng(22.690094360601666, 75.86696208817003),
+    LatLng(22.711007455102123, 75.90449012679649),
+    LatLng(22.72039655198061, 75.8800028998116),
+    LatLng(22.723207068112245, 75.88146202148684),
+    LatLng(22.696231621852835, 75.84200461145309),
+    LatLng(22.743668384624144, 75.88414601515495),
+    LatLng(22.727523497769177, 75.867223438438),
+    LatLng(22.756419935867573, 75.90040646912479),
+    LatLng(22.71303350485125, 75.83813201515494),
+    LatLng(22.718785906734414, 75.87159025748326),
+    LatLng(22.71157173860962, 75.88057112679651),
+    LatLng(22.75439736584422, 75.86603583843801),
+    LatLng(22.76457976899035, 75.88175504213989),
+    LatLng(22.68978571991704, 75.82854837282666),
+    LatLng(22.774216556794965, 75.93819999981156),
+    LatLng(22.72872389360065, 75.81970038446818),
+    LatLng(22.75300466652904, 75.88371783049836),
+    LatLng(22.680861661295364, 75.86466691515494),
+    LatLng(22.822233834614817, 75.85060808817003),
+    LatLng(22.773387258718525, 75.89806049981156),
+    LatLng(22.69715523123308, 75.85490979610971),
+    LatLng(22.743467281721745, 75.88398642679648),
+    LatLng(22.75623113622311, 75.88586149981158),
+    LatLng(22.73491968583458, 75.8739990691248),
+    LatLng(22.821418303153184, 75.92934711515494),
+    LatLng(22.770962579049286, 75.91027849981157),
+    LatLng(22.75047031804727, 75.90484347282667),
+    LatLng(22.72244592288266, 75.87864999981157),
+    LatLng(22.72080315428281, 75.8793151876341),
+    LatLng(22.718051967515425, 75.88189010823747),
+    LatLng(22.775836614708965, 75.89040629981157),
+    LatLng(22.76088120096437, 75.89073504213982),
+    //ujjain
+    LatLng(23.1685565635321, 75.80026434498272),
+    LatLng(23.15653483338341, 75.74303271977631),
+    LatLng(23.120544467834325, 75.79950931167687),
+        LatLng(23.178476892263614, 75.79260127674304),
+        LatLng(23.19126132267846, 75.78753903736273),
+        LatLng(23.18119647057517, 75.79007271337125)
     )
+
     private var tappedLatLng: LatLng? = null
 
 
     private lateinit var showLocationButton: Button
-    private lateinit var showDirection: Button
-    private lateinit var autocompleteFragment: AutocompleteSupportFragment
     private lateinit var lastLocation: Location
     private lateinit var nearest : Location
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var nearbyButton: Button
-    lateinit var googleMap: GoogleMap
-
     private lateinit var spCity: Spinner
     private lateinit var spLocation: Spinner
-    private val cityList = ArrayList<String>()
-    private val locationList = ArrayList<String>()
-    private val maxList = ArrayList<String>()
-    private lateinit var cityAdapter: ArrayAdapter<String>
-    private lateinit var locationAdapter: ArrayAdapter<String>
 
     companion object {
         private const val LOCATION_REQUEST_CODE = 1
@@ -118,16 +111,17 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Thread.sleep(3000)
+        installSplashScreen()
         setContentView(R.layout.activity_main)
 
         spCity=findViewById(R.id.sp_city)
         spLocation=findViewById(R.id.sp_location)
 
         val cityList=listOf("Indore","Ujjain","Dewas")
-        val IndoreLocations=listOf("Vijay Nagar","LIG","Airport")
-        val UjjainLocations=listOf("A","B","C")
-        val DewasLocations=listOf("X","Y","Z")
-
+        val IndoreLocations=listOf("Vijay Nagar","LIG","Airport","Rajendra Nagar","Sukhliya","Indraprasth","Banganga","Manik Bagh","Chhota Bangarda","Khajrana")
+        val UjjainLocations=listOf("NanaKheda","Nagziri","Freeganj","Rishi Nagar","Sindhi Colony","Indira Nagar")
+        val DewasLocations=listOf("Gomti Nagar","Saket Nagar","Old Town","Bhonsley Colony","Ram Nagar")
         val cityAdapter= ArrayAdapter(this,android.R.layout.simple_spinner_item,cityList)
         cityAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         spCity.adapter=cityAdapter
@@ -169,15 +163,31 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
                         // Perform action for each selected location
                         // Example: Zoom to the selected location on the map
                         when (selectedLocation) {
-                            "Vijay Nagar" -> zoomOnMap(LatLng(22.7196, 75.8577)) // Example coordinates for Vijay Nagar
-                            "LIG" -> zoomOnMap(LatLng(22.7088, 75.8752))
-                            "Airport" -> zoomOnMap(LatLng(22.7217, 75.8016))
-                            "A" -> zoomOnMap(LatLng(23.1745, 75.7859))
-                            "B" -> zoomOnMap(LatLng(23.1907, 75.7671))
-                            "C" -> zoomOnMap(LatLng(23.1815, 75.7780))
-                            "X" -> zoomOnMap(LatLng(22.9676, 76.0554))
-                            "Y" -> zoomOnMap(LatLng(22.9752, 76.0345))
-                            "Z" -> zoomOnMap(LatLng(22.9851, 76.0157))
+                            //Indore Locations
+                            "Vijay Nagar" -> zoomOnMap(LatLng(22.751118634027794, 75.895452147576467),"Vijay Nagar") // Example coordinates for Vijay Nagar
+                            "LIG" -> zoomOnMap(LatLng(22.73362065044108, 75.88999353811086),"LIG")
+                            "Airport" -> zoomOnMap(LatLng(22.73003082950402, 75.8053365967357),"Airport")
+                            "Rajendra Nagar" -> zoomOnMap(LatLng(22.671353098417796, 75.82970457072918),"Rajendra Nagar")
+                            "Sukhliya" -> zoomOnMap(LatLng(22.765380259352614, 75.87094312702231),"Sukhliya")
+                            "Indraprasth" -> zoomOnMap(LatLng(22.722633822610852, 75.88228846249103),"Indraprasth")
+                            "Banganga" -> zoomOnMap(LatLng(22.73439723917333, 75.84940318036827),"Banganga")
+                            "Manik Bagh" -> zoomOnMap(LatLng(22.68377623134783, 75.8553332529431),"Manik Bagh")
+                            "Chhota Bangarda" -> zoomOnMap(LatLng(22.7430, 75.8687),"Chhota Bangarda")
+                            "Khajrana" -> zoomOnMap(LatLng(22.736795721660172, 75.90919034438909),"Khajrana")
+
+//                            Ujjain Locations
+                            "NanaKheda" -> zoomOnMap(LatLng(23.15661996280091, 75.78818241017863),"NanaKheda")
+                            "Nagziri" -> zoomOnMap(LatLng(23.143941356647627, 75.81260079405234),"Nagziri")
+                            "Freeganj" -> zoomOnMap(LatLng(23.178820580154916, 75.79147246053424),"Freeganj")
+                            "Rishi Nagar" -> zoomOnMap(LatLng(23.16471909702668, 75.79370864060614),"Rishi Nagar")
+                            "Sindhi Colony" -> zoomOnMap(LatLng(23.177404195328688, 75.782989681767),"Sindhi Colony")
+                            "Indira Nagar" -> zoomOnMap(LatLng(23.20440401889087, 75.786102269621420),"Indira Nagar")
+                             //Dewas Locations
+                            "Gomti Nagar" -> zoomOnMap(LatLng(22.964080447873815, 76.0545449856301),"Gomti Nagar")
+                            "Saket Nagar" -> zoomOnMap(LatLng(22.974216457466696, 76.05979440493289),"Saket Nagar")
+                            "Old Town" -> zoomOnMap(LatLng(22.962075920574282, 76.06113582864599),"Old Town")
+                            "Bhonsley Colony" -> zoomOnMap(LatLng(22.979210506636615, 76.05534606624637),"Bhonsley Colony")
+                            "Ram Nagar" -> zoomOnMap(LatLng(22.96228119037829, 76.04094390933624),"Ram Nagar")
                         }
                     }
 
@@ -192,17 +202,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
             }
         }
 
-
-
-        createNotificationChannel()
-
-
-
-
         Places.initialize(applicationContext, "AIzaSyAsdQoVAJfGztpgM8S4ztHy1gH_1oqSxoA")
-
-
-
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
 
@@ -213,7 +213,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
 
 
         showLocationButton.setOnClickListener {
-            mGoogleMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(LatLng(22.732781553564706, 75.8892599501686), 13f))
+            mGoogleMap?.animateCamera(CameraUpdateFactory.newLatLngZoom( LatLng(lastLocation.latitude, lastLocation.longitude), 13f))
         }
 
 
@@ -234,9 +234,19 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
         }
     }
 
-    private fun zoomOnMap(latLng: LatLng) {
-        val newLatLngZoom = CameraUpdateFactory.newLatLngZoom(latLng, 12f)
+    private fun zoomOnMap(latLng: LatLng, place : String) {
+        val newLatLngZoom = CameraUpdateFactory.newLatLngZoom(latLng, 14f)
         mGoogleMap?.animateCamera(newLatLngZoom)
+        val markerOption = MarkerOptions()
+        latLng.let { markerOption.position(it)}
+        markerOption.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
+        val marker1 = mGoogleMap?.addMarker(markerOption)
+        if (marker1 != null) {
+            marker1.tag = info_data(
+                place,""
+            )
+        }
+
     }
 
     private fun changeMap(itemId: Int) {
@@ -259,33 +269,55 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
 
 
         val theMap = HashMap<LatLng,String>()
-        theMap[locations[0]]="Sech.No-94, Plot No 172 , Ground Floor, 172, Main Rd, opposite Brilliant Convention Centre, near HDFC Bank, Scheme No 113, Indore, Madhya Pradesh 452010"
-        theMap[locations[1]]="Jail Rd, Indore GPO, Indore, Madhya Pradesh 452001"
-        theMap[locations[2]]="Pather Godown, Near Rajkumar Bridge, Snehlataganj, Indore, Madhya Pradesh 452001"
-        theMap[locations[3]]="Near Rajkumar Bridge, Snehlataganj, Indore, Madhya Pradesh 452001"
-        theMap[locations[4]]="33, Nehru Park Rd, Saste Nagar, Nehru Park 2, Shivaji Nagar, Indore, Madhya Pradesh 452003"
-        theMap[locations[5]]="Address6"
-        theMap[locations[6]]="Address7"
-        theMap[locations[7]]="Address8"
-        theMap[locations[8]]="Address9"
-        theMap[locations[9]]="Address10"
-        theMap[locations[10]]="Address11"
-        theMap[locations[11]]="Address12"
-        theMap[locations[12]]="Address13"
-        theMap[locations[13]]="Address14"
-        theMap[locations[14]]="Address15"
-        theMap[locations[15]]="Address16"
-        theMap[locations[16]]="Address17"
-        theMap[locations[17]]="Address18"
-        theMap[locations[18]]="Address19"
-        theMap[locations[19]]="Address20"
-        theMap[locations[20]]="Address21"
-
-
-
-
-
-
+        theMap[locations[0]]="Jail Rd, Indore GPO, Indore, Madhya Pradesh 452001"
+        theMap[locations[1]]="PVG9+V2P, Near Rajkumar Bridge, Snehlataganj, Indore, Madhya Pradesh 452001"
+        theMap[locations[2]]="EV Urjaa 2nd Floor, ICCC Building, Indore Smart Seed Incubation Centre AICTSL Campus, Chartered Bus Stand, near Geeta Bhawan, Indore, Madhya Pradesh 452001"
+        theMap[locations[3]]="6/6, EV Urjaa Charging station in front of Gurudwara Old Rajmohalla, North Rajmohalla, Ward 23, opposite Gurudwara Guru Nanak Darbar, Rajmohalla, Indore, Madhya Pradesh 452002"
+        theMap[locations[4]]="PVPC+P82, Malwa Mill Rd, Patni Pura, Indore, Madhya Pradesh 452001"
+        theMap[locations[5]]="FH-228, Sceme No 54, Vijay Nagar, Indore, Madhya Pradesh 452010"
+        theMap[locations[6]]="2, AB Rd, Shree Nagar Main Colony, Anoop Nagar, Indore, Madhya Pradesh 452001"
+        theMap[locations[7]]="Laxmi Building, Police Station, 22, North, Yashwant Ganj, Malharganj, Indore, Madhya Pradesh 452002"
+        theMap[locations[8]]="Priyanka Enterprises, 5/2, Moti Tabela, Indore, Madhya Pradesh 452007"
+        theMap[locations[9]]="Sakaar Apat, 24-26, Manik Bagh Rd, Saifee Nagar, Indore, Madhya Pradesh 452014"
+        theMap[locations[10]]="236, Bhawarkua Main Rd, near Anand Super 100, Indrapuri Colony, Bhanwar Kuwa, Indore, Madhya Pradesh 452014"
+        theMap[locations[11]]="Hotel Essentia, near world cup square, Vandana Nagar, Indore, Madhya Pradesh 452015"
+        theMap[locations[12]]="No 11, Nexus Treasure Island, Mahatma Gandhi Rd, Near Treasure Island, South Tukoganj, Indore, Madhya Pradesh 452001"
+        theMap[locations[13]]="Revolt service center, Mahatma Gandhi Rd, Near Indraprastha Tower, Race Course Road, Indore, Madhya Pradesh 452001"
+        theMap[locations[14]]="Dosa Magic, 147 B, Annapurna Rd, near Annapurna Police Station, Moon Palace Colony, Indore, Madhya Pradesh 452009"
+        theMap[locations[15]]="Aastha Talkies, Near 452010, Patni Pura Rd, Nanda Nagar, Indore, Madhya Pradesh 452011"
+        theMap[locations[16]]="PVG8+RX6 Pather Godown, Near Rajkumar Bridge, Snehlataganj, Indore, Madhya Pradesh 452001"
+        theMap[locations[17]]="Shop No. 17, Shekhar Planet, Nom Nom Chinese, Vijay Nagar, Indore, Madhya Pradesh 452001"
+        theMap[locations[18]]="PR7Q+36W, Dhar Rd, Labriya Bheru, Raj Mohalla, Indore, Madhya Pradesh 452002"
+        theMap[locations[19]]="Nexus Treasure Island, opposite Ravindra Natya Grah, Flim Colony, South Tukoganj, Indore, Madhya Pradesh 452001"
+        theMap[locations[20]]="PV6J+JCP, M G Road, Opposite M Y H, M G Marg, MY Hospital Rd, Opposite Indrasan Building, Jaora Compound, Ushaganj, Murai Mohalla, Indore, Madhya Pradesh 452001 1, PV6J+JCP, Jaora Compound Main Rd, Murai Mohalla, Indore, Madhya Pradesh 452001"
+        theMap[locations[21]]="Electronic Complex, 2-A, opp. IDEA CELLUAR LTD, Pardesipura, Indore, Madhya Pradesh 452010"
+        theMap[locations[22]]="Sech.No-94, Plot No 172 , Ground Floor, 172, Main Rd, opposite Brilliant Convention Centre, near HDFC Bank, Scheme No 113, Indore, Madhya Pradesh 452010"
+        theMap[locations[23]]="2563-E, Ring Rd, Sector E, Sudama Nagar, Indore, Madhya Pradesh 452009"
+        theMap[locations[24]]="Sheraton Grand Palace, Bypass Road, Omaxe City 1, Mayakhedi, Indore, Madhya Pradesh 452016"
+        theMap[locations[25]]="158, Sangam Nagar, Kanyakubj Nagar, Indore, Madhya Pradesh 452006"
+        theMap[locations[26]]="H-2, Marriott Hotel, Maguda Nagar, Scheme No 54, Indore, Madhya Pradesh 452010"
+        theMap[locations[27]]="Wah Wah Chap IT Park, 308, Pipliya Rao Ring Rd, Ambicapuri Colony, Ambikapuri, Indore, Madhya Pradesh 452014"
+        theMap[locations[28]]="RVC2+P6C, INDORE UJJAIN STATE HIGHWAY VILLAGE BAROLI, DIST, near TOLL PLAZA, Indore, 453555"
+        theMap[locations[29]]="93/94 New Loha Mandi, Niranjanpur Cir, New Loha Mandi, Dewas Naka, Lasudia Mori, Indore, Madhya Pradesh 453771"
+        theMap[locations[30]]="MVW4+P2F, Manik Bagh Rd, Nai Duniya, Saifee Nagar, Indore, Madhya Pradesh 452014"
+        theMap[locations[31]]="Near 452010, Patni Pura Rd, Nanda Nagar, LIG Main Rd, LIG Colony, Indore, Madhya Pradesh 452010"
+        theMap[locations[32]]="FH 228, Scheme no. 54, Vijay Nagar, Indore, Madhya Pradesh 452010"
+        theMap[locations[33]]="50, Malwa Mill Rd, Malwa Mill Square, Malwa Mill, Indore, Madhya Pradesh 452001"
+        theMap[locations[34]]="RWCH+9PM, Baans Balli walo ke pass, AB Rd, Manglaya Sadak, Indore, Madhya Pradesh 453771"
+        theMap[locations[35]]="Ground Floor, B Zone, Nipania, Indore, Madhya Pradesh 452012"
+        theMap[locations[36]]="PWX3+XWR, Pushp Vihar Colony, Scheme No 131, Indore, Madhya Pradesh 452010"
+        theMap[locations[37]]="Infront of, 580, Mahatma Gandhi Rd, near Indraprastha Tower, Race Course Road, Indore, Madhya Pradesh 452001"
+        theMap[locations[38]]="PVCH+5P3, South Tukoganj, Indore, Madhya Pradesh 452001"
+        theMap[locations[39]]="Treebo Trend, omni palace hotel, Ratlam Kothi Main Rd, Ratlam Kothi, Indore, Madhya Pradesh 452001"
+        theMap[locations[40]]="1, Khalsa Chowk Rd, Bulandshahr, Vijay Nagar, Indore, Madhya Pradesh 452010"
+        theMap[locations[41]]="Type-C, Plot No . 08, Scheme No 78 - III, Sector D, Slice 4, Araniya, Scheme 78, Vijay Nagar, Indore, Madhya Pradesh 452010"
+        theMap[locations[42]]="GB-2 & 4 , Divine Valley , Dewas Road , Ujjain , M.P 456010, Ujjain, 456001"
+        theMap[locations[43]]="Ujjain, Madhya Pradesh 456006"
+        theMap[locations[44]]="Ground Floor, Indore Rd, near Dhaba, Ujjain, Gothada, Madhya Pradesh 456010"
+        theMap[locations[45]]="Malay Travels, 74, Ujjain Dewas Rd, Sant Nagar, Ujjain, Madhya Pradesh 456010"
+        theMap[locations[46]]="58 arvind nagar agar road, Ujjain, Madhya Pradesh 456001"
+        theMap[locations[47]]="62, Amar Singh Marg, opposite Bank of Baroda, Freeganj, Madhav Nagar, Ujjain, Madhya Pradesh 456010"
+   
 
 
 
@@ -401,11 +433,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
                 }
                 notify(1,builder.build())
             }
-
-
-
         }
-
     }
 
 
@@ -511,14 +539,12 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
                 CHANNEL_ID, "First Notification",
                 NotificationManager.IMPORTANCE_HIGH
             )
-            channel.description = "vriovjrojrotprtr"
+            channel.description = ""
             val notificationManager =
                 getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.createNotificationChannel(channel)
         }
     }
     override fun onMarkerClick(p0: com.google.android.gms.maps.model.Marker) = false
-
-
 
 }

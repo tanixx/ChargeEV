@@ -28,7 +28,7 @@
     <Spinner
         android:background="@color/quantum_grey"
         android:layout_width="0dp"
-        android:layout_height="30dp"
+        android:layout_height="40dp"
         android:layout_weight="0.7"
         android:id="@+id/sp_city"
         android:layout_marginEnd="4dp"
@@ -38,7 +38,7 @@
     <Spinner
         android:background="@color/quantum_grey"
         android:layout_width="0dp"
-        android:layout_height="30dp"
+        android:layout_height="40dp"
         android:layout_weight="0.7"
         android:id="@+id/sp_location"
         android:layout_marginStart="4dp"
@@ -77,11 +77,5 @@
         app:layout_constraintStart_toStartOf="parent"
         android:layout_marginStart="20dp"
         android:layout_marginBottom="8dp"/>
-
-
-
-
-
-
 
 </androidx.constraintlayout.widget.ConstraintLayout>
