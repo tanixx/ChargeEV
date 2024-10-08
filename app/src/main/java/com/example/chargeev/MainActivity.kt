@@ -1,9 +1,5 @@
 package com.example.chargeev
 import android.Manifest
-import android.view.View
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
-import android.widget.Spinner
 import android.annotation.SuppressLint
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -12,9 +8,13 @@ import android.content.pm.PackageManager
 import android.location.Location
 import android.os.Build
 import android.os.Bundle
+import android.view.View
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.PopupMenu
+import android.widget.Spinner
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
@@ -33,7 +33,6 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.libraries.places.api.Places
-import com.google.android.libraries.places.widget.AutocompleteSupportFragment
 import com.google.maps.android.SphericalUtil
 import kotlin.math.roundToInt
 
@@ -89,10 +88,9 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
     LatLng(23.120544467834325, 75.79950931167687),
         LatLng(23.178476892263614, 75.79260127674304),
         LatLng(23.19126132267846, 75.78753903736273),
-        LatLng(23.18119647057517, 75.79007271337125)
+        LatLng(23.18119647057517, 75.79007271337125),
+        LatLng(22.72670354973183, 75.87425373547487)
     )
-
-    private var tappedLatLng: LatLng? = null
 
 
     private lateinit var showLocationButton: Button
@@ -317,6 +315,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
         theMap[locations[45]]="Malay Travels, 74, Ujjain Dewas Rd, Sant Nagar, Ujjain, Madhya Pradesh 456010"
         theMap[locations[46]]="58 arvind nagar agar road, Ujjain, Madhya Pradesh 456001"
         theMap[locations[47]]="62, Amar Singh Marg, opposite Bank of Baroda, Freeganj, Madhav Nagar, Ujjain, Madhya Pradesh 456010"
+        theMap[locations[48]]="AICTSL charging Station S.G.S.I.T.S. Near Golden Gate"
    
 
 
@@ -445,10 +444,10 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
             val kilometers=(((distance/1000)*100).roundToInt())/100.0
             val time= kilometers*60/speed/1.0
             dist="${kilometers}km" +
-                    " Estmd Time ${time.roundToInt()} Min"
+                    " Estmd : Time ${time.roundToInt()} Min"
         }
         else{
-            dist="${distance.roundToInt()}m"+"Estmd Time ${(distance/125)*18*60}Sec"
+            dist="${distance.roundToInt()}m "+"Estmd : Time ${((distance/125)*18).roundToInt()} Sec"
         }
 
         return dist
@@ -546,5 +545,4 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
         }
     }
     override fun onMarkerClick(p0: com.google.android.gms.maps.model.Marker) = false
-
 }

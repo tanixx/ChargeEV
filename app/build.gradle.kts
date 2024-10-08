@@ -63,6 +63,10 @@ dependencies {
     implementation ("com.google.code.gson:gson:2.10.1")
     implementation ("com.google.maps.android:android-maps-utils:2.2.5")
     implementation ("com.google.android.gms:play-services-maps:19.0.0")
+    implementation ("com.squareup.moshi:moshi:1.13.0")
+    implementation("com.squareup.moshi:moshi-kotlin:1.13.0")
+    implementation("com.squareup.retrofit2:converter-moshi:2.9.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.0")
 
 
 
