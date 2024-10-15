@@ -206,7 +206,123 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
 
         showLocationButton = findViewById(R.id.showLocationButton)
         nearbyButton = findViewById(R.id.nearbyButton)
+        val twoWheelerButton: Button = findViewById(R.id.twoWheelerButton)
+        val fourWheelerButton: Button = findViewById(R.id.fourWheelerButton)
 
+
+        twoWheelerButton.setOnClickListener {
+            val locations = listOf(
+                LatLng(22.72931744966455, 75.86334920016742),
+                LatLng(22.727773721130557, 75.86742615778944),
+                LatLng(22.714731712192407, 75.88433771465213),
+                LatLng(22.717086037558957, 75.84087599897448),
+                LatLng(22.737158803471615, 75.87081697282667)
+            )
+            val theMap = HashMap<LatLng,String>()
+            theMap[locations[0]]="Jail Rd, Indore GPO, Indore, Madhya Pradesh 452001"
+            theMap[locations[1]]="PVG9+V2P, Near Rajkumar Bridge, Snehlataganj, Indore, Madhya Pradesh 452001"
+            theMap[locations[2]]="EV Urjaa 2nd Floor, ICCC Building, Indore Smart Seed Incubation Centre AICTSL Campus, Chartered Bus Stand, near Geeta Bhawan, Indore, Madhya Pradesh 452001"
+            theMap[locations[3]]="6/6, EV Urjaa Charging station in front of Gurudwara Old Rajmohalla, North Rajmohalla, Ward 23, opposite Gurudwara Guru Nanak Darbar, Rajmohalla, Indore, Madhya Pradesh 452002"
+            theMap[locations[4]]="PVPC+P82, Malwa Mill Rd, Patni Pura, Indore, Madhya Pradesh 452001"
+            for (location in locations) {
+                val markerOption = MarkerOptions()
+                location.let { markerOption.position(it) }
+                markerOption.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE))
+                val marker1 = mGoogleMap?.addMarker(markerOption)
+                if (marker1 != null) {
+                    marker1.tag = theMap[location]?.let {
+                        info_data(
+                            it,
+                            distanceBetween(
+                                lastLocation.latitude,
+                                lastLocation.longitude,
+                                location.latitude,
+                                location.longitude
+                            )
+                        )
+                    }
+                    mGoogleMap?.setInfoWindowAdapter(info_window_adaptor(this))
+
+                }
+                else {
+                    Toast.makeText(this, "Unable to get current location", Toast.LENGTH_SHORT).show()
+
+
+                }
+            }
+            val currentLatLng = LatLng(lastLocation.latitude, lastLocation.longitude)
+            var nearestLocation: LatLng? = null
+            var minDistance = Double.MAX_VALUE
+
+            locations.forEach { location ->
+                val distance = FloatArray(1)
+                Location.distanceBetween(currentLatLng.latitude, currentLatLng.longitude,
+                    location.latitude, location.longitude, distance)
+                if (distance[0] < minDistance) {
+                    minDistance = distance[0].toDouble()
+                    nearestLocation = location
+                }
+            }
+            mGoogleMap?.animateCamera(CameraUpdateFactory.newLatLngZoom( LatLng(nearestLocation!!.latitude, nearestLocation!!.longitude), 15f))
+
+        }
+
+        fourWheelerButton.setOnClickListener {
+            val locations = listOf(LatLng(22.75513595140915, 75.88604515378142),
+                LatLng(22.73088976610597, 75.8893107844682),
+                LatLng(22.7205593367236, 75.84741272679648),
+                LatLng(22.711486302110444, 75.85601326912477),
+                LatLng(22.69548195427431, 75.85512854213988))
+            val theMap = HashMap<LatLng,String>()
+            theMap[locations[0]]="FH-228, Sceme No 54, Vijay Nagar, Indore, Madhya Pradesh 452010"
+            theMap[locations[1]]="2, AB Rd, Shree Nagar Main Colony, Anoop Nagar, Indore, Madhya Pradesh 452001"
+            theMap[locations[2]]="Laxmi Building, Police Station, 22, North, Yashwant Ganj, Malharganj, Indore, Madhya Pradesh 452002"
+            theMap[locations[3]]="Priyanka Enterprises, 5/2, Moti Tabela, Indore, Madhya Pradesh 452007"
+            theMap[locations[4]]="Sakaar Apat, 24-26, Manik Bagh Rd, Saifee Nagar, Indore, Madhya Pradesh 452014"
+
+
+            for (location in locations) {
+                val markerOption = MarkerOptions()
+                location.let { markerOption.position(it) }
+                markerOption.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW))
+                val marker1 = mGoogleMap?.addMarker(markerOption)
+                if (marker1 != null) {
+                    marker1.tag = theMap[location]?.let {
+                        info_data(
+                            it,
+                            distanceBetween(
+                                lastLocation.latitude,
+                                lastLocation.longitude,
+                                location.latitude,
+                                location.longitude
+                            )
+                        )
+                    }
+                    mGoogleMap?.setInfoWindowAdapter(info_window_adaptor(this))
+
+                }
+                else {
+                    Toast.makeText(this, "Unable to get current location", Toast.LENGTH_SHORT).show()
+
+
+                }
+            }
+            val currentLatLng = LatLng(lastLocation.latitude, lastLocation.longitude)
+            var nearestLocation: LatLng? = null
+            var minDistance = Double.MAX_VALUE
+
+            locations.forEach { location ->
+                val distance = FloatArray(1)
+                Location.distanceBetween(currentLatLng.latitude, currentLatLng.longitude,
+                    location.latitude, location.longitude, distance)
+                if (distance[0] < minDistance) {
+                    minDistance = distance[0].toDouble()
+                    nearestLocation = location
+                }
+            }
+            mGoogleMap?.animateCamera(CameraUpdateFactory.newLatLngZoom( LatLng(nearestLocation!!.latitude, nearestLocation!!.longitude), 15f))
+
+        }
 
 
 

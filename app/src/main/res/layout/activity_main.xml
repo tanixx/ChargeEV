@@ -25,26 +25,26 @@
         android:layout_height="match_parent"
         tools:context=".MainActivity"
         tools:ignore="MissingConstraints">
-    <Spinner
-        android:background="@color/quantum_grey"
-        android:layout_width="0dp"
-        android:layout_height="40dp"
-        android:layout_weight="0.7"
-        android:id="@+id/sp_city"
-        android:layout_marginEnd="4dp"
-        tools:listitem="@layout/item_dropdown"
-        />
-    <!-- Drop down number 2-->
-    <Spinner
-        android:background="@color/quantum_grey"
-        android:layout_width="0dp"
-        android:layout_height="40dp"
-        android:layout_weight="0.7"
-        android:id="@+id/sp_location"
-        android:layout_marginStart="4dp"
-        tools:listitem="@layout/item_dropdown"
-        />
+        <Spinner
+            android:background="@color/quantum_grey"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_weight="0.7"
+            android:id="@+id/sp_city"
+            android:layout_marginEnd="4dp"
+            tools:listitem="@layout/item_dropdown"
+            />
+        <Spinner
+            android:background="@color/quantum_grey"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_weight="0.7"
+            android:id="@+id/sp_location"
+            android:layout_marginStart="4dp"
+            tools:listitem="@layout/item_dropdown"
+            />
     </LinearLayout>
+
     <ImageButton
         android:id="@+id/mapOptionMenu"
         android:layout_width="50dp"
@@ -72,10 +72,34 @@
         android:id="@+id/nearbyButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Nearby Stations"
+        android:text="Nearest Station"
         app:layout_constraintTop_toBottomOf="@+id/showLocationButton"
         app:layout_constraintStart_toStartOf="parent"
         android:layout_marginStart="20dp"
         android:layout_marginBottom="8dp"/>
+
+    <!-- New buttons for finding charging stations in the bottom-right corner -->
+
+    <Button
+        android:id="@+id/twoWheelerButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@color/quantum_orange"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="100dp"
+        android:text="2-Wheeler"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <Button
+        android:id="@+id/fourWheelerButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:background="@color/quantum_yellow"
+        android:layout_marginBottom="8dp"
+        android:text="4-Wheeler"
+        app:layout_constraintBottom_toTopOf="@+id/twoWheelerButton"
+        app:layout_constraintEnd_toEndOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
