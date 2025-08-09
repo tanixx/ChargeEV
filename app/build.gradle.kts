@@ -1,8 +1,13 @@
-import org.jetbrains.kotlin.storage.CacheResetOnProcessCanceled.enabled
+import java.util.Properties
+import java.io.FileInputStream
 
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
+}
+
+val localProperties = Properties().apply {
+    load(FileInputStream(rootProject.file("local.properties")))
 }
 
 android {
@@ -17,6 +22,13 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // This will end up in BuildConfig
+        buildConfigField(
+            "String",
+            "MAPS_API_KEY",
+            "\"${localProperties.getProperty("MAPS_API_KEY") ?: ""}\""
+        )
     }
 
     buildTypes {
@@ -28,6 +40,12 @@ android {
             )
         }
     }
+
+    // Force BuildConfig generation
+    buildFeatures {
+        buildConfig = true
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
@@ -35,14 +53,9 @@ android {
     kotlinOptions {
         jvmTarget = "1.8"
     }
-//
-//    viewBinding{
-//        enabled = true
-//    }
 }
 
 dependencies {
-
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
@@ -53,21 +66,19 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
     implementation(libs.play.services.maps)
     implementation("androidx.core:core-splashscreen:1.0.1")
-    implementation ("com.squareup.retrofit2:retrofit:2.9.0")
-    implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation("com.google.android.gms:play-services-location:21.3.0")
     implementation("com.google.android.libraries.places:places:3.5.0")
     implementation("com.google.android.gms:play-services-maps:19.0.0")
-    implementation("com.squareup.okhttp3:okhttp:4.8.1")
-    implementation ("com.squareup.okhttp3:okhttp:4.9.3")
-    implementation ("com.google.code.gson:gson:2.10.1")
-    implementation ("com.google.maps.android:android-maps-utils:2.2.5")
-    implementation ("com.google.android.gms:play-services-maps:19.0.0")
-    implementation ("com.squareup.moshi:moshi:1.13.0")
+    implementation("com.squareup.okhttp3:okhttp:4.9.3")
+    implementation("com.google.code.gson:gson:2.10.1")
+    implementation("com.google.maps.android:android-maps-utils:2.2.5")
+    implementation("com.squareup.moshi:moshi:1.13.0")
     implementation("com.squareup.moshi:moshi-kotlin:1.13.0")
     implementation("com.squareup.retrofit2:converter-moshi:2.9.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.0")
-
-
+    implementation ("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
 
 }

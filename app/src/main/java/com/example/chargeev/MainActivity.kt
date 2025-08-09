@@ -1,4 +1,5 @@
 package com.example.chargeev
+import LocationItem
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.NotificationChannel
@@ -6,9 +7,17 @@ import android.app.NotificationManager
 import android.content.Context
 import android.content.pm.PackageManager
 import android.location.Location
+
+import com.example.chargeev.BuildConfig
 import android.os.Build
 import android.os.Bundle
 import android.view.View
+import android.util.Log
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import com.example.chargeev.ApiResponse
+import com.example.chargeev.RetrofitClient
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Button
@@ -22,6 +31,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -34,65 +44,12 @@ import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.libraries.places.api.Places
 import com.google.maps.android.SphericalUtil
+import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
 class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerClickListener {
 
     private var mGoogleMap: GoogleMap? = null
-    private val locations = listOf(
-        LatLng(22.72931744966455, 75.86334920016742),
-        LatLng(22.727773721130557, 75.86742615778944),
-        LatLng(22.714731712192407, 75.88433771465213),
-        LatLng(22.717086037558957, 75.84087599897448),
-        LatLng(22.737158803471615, 75.87081697282667),
-    LatLng(22.75513595140915, 75.88604515378142),
-    LatLng(22.73088976610597, 75.8893107844682),
-    LatLng(22.7205593367236, 75.84741272679648),
-    LatLng(22.711486302110444, 75.85601326912477),
-    LatLng(22.69548195427431, 75.85512854213988),
-    LatLng(22.690094360601666, 75.86696208817003),
-    LatLng(22.711007455102123, 75.90449012679649),
-    LatLng(22.72039655198061, 75.8800028998116),
-    LatLng(22.723207068112245, 75.88146202148684),
-    LatLng(22.696231621852835, 75.84200461145309),
-    LatLng(22.743668384624144, 75.88414601515495),
-    LatLng(22.727523497769177, 75.867223438438),
-    LatLng(22.756419935867573, 75.90040646912479),
-    LatLng(22.71303350485125, 75.83813201515494),
-    LatLng(22.718785906734414, 75.87159025748326),
-    LatLng(22.71157173860962, 75.88057112679651),
-    LatLng(22.75439736584422, 75.86603583843801),
-    LatLng(22.76457976899035, 75.88175504213989),
-    LatLng(22.68978571991704, 75.82854837282666),
-    LatLng(22.774216556794965, 75.93819999981156),
-    LatLng(22.72872389360065, 75.81970038446818),
-    LatLng(22.75300466652904, 75.88371783049836),
-    LatLng(22.680861661295364, 75.86466691515494),
-    LatLng(22.822233834614817, 75.85060808817003),
-    LatLng(22.773387258718525, 75.89806049981156),
-    LatLng(22.69715523123308, 75.85490979610971),
-    LatLng(22.743467281721745, 75.88398642679648),
-    LatLng(22.75623113622311, 75.88586149981158),
-    LatLng(22.73491968583458, 75.8739990691248),
-    LatLng(22.821418303153184, 75.92934711515494),
-    LatLng(22.770962579049286, 75.91027849981157),
-    LatLng(22.75047031804727, 75.90484347282667),
-    LatLng(22.72244592288266, 75.87864999981157),
-    LatLng(22.72080315428281, 75.8793151876341),
-    LatLng(22.718051967515425, 75.88189010823747),
-    LatLng(22.775836614708965, 75.89040629981157),
-    LatLng(22.76088120096437, 75.89073504213982),
-    //ujjain
-    LatLng(23.1685565635321, 75.80026434498272),
-    LatLng(23.15653483338341, 75.74303271977631),
-    LatLng(23.120544467834325, 75.79950931167687),
-        LatLng(23.178476892263614, 75.79260127674304),
-        LatLng(23.19126132267846, 75.78753903736273),
-        LatLng(23.18119647057517, 75.79007271337125),
-        LatLng(22.72670354973183, 75.87425373547487)
-    )
-
-
     private lateinit var showLocationButton: Button
     private lateinit var lastLocation: Location
     private lateinit var nearest : Location
@@ -100,14 +57,16 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
     private lateinit var nearbyButton: Button
     private lateinit var spCity: Spinner
     private lateinit var spLocation: Spinner
-
+    private val locations: MutableList<LatLng> = mutableListOf(
+        LatLng(22.751118634027794, 75.89545214757646)
+    )
     companion object {
         private const val LOCATION_REQUEST_CODE = 1
         const val CHANNEL_ID="channelID"
     }
-
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
+
         super.onCreate(savedInstanceState)
         Thread.sleep(3000)
         installSplashScreen()
@@ -115,6 +74,28 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
 
         spCity=findViewById(R.id.sp_city)
         spLocation=findViewById(R.id.sp_location)
+
+        fetchData()
+
+        lifecycleScope.launch {
+            try {
+                val response = RetrofitClient.instance.getAllData()
+                val newLocations = response.stations.mapNotNull { map ->
+                    val lat = map["latitude"].toDoubleOrNull()
+                    val lon = map["longitude"].toDoubleOrNull()
+                    if (lat != null && lon != null) LatLng(lat, lon) else null
+                }
+
+                locations.addAll(newLocations)
+
+            }
+
+            catch (e:Exception){
+                e.printStackTrace()
+                Toast.makeText(this@MainActivity, "Failed to fetch locations", Toast.LENGTH_SHORT).show()
+            }
+        }
+
 
         val cityList=listOf("Indore","Ujjain","Dewas")
         val IndoreLocations=listOf("Vijay Nagar","LIG","Airport","Rajendra Nagar","Sukhliya","Indraprasth","Banganga","Manik Bagh","Chhota Bangarda","Khajrana")
@@ -200,7 +181,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
             }
         }
 
-        Places.initialize(applicationContext, "AIzaSyAsdQoVAJfGztpgM8S4ztHy1gH_1oqSxoA")
+        Places.initialize(applicationContext, BuildConfig.MAPS_API_KEY)
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
 
@@ -211,118 +192,172 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
 
 
         twoWheelerButton.setOnClickListener {
-            val locations = listOf(
-                LatLng(22.72931744966455, 75.86334920016742),
-                LatLng(22.727773721130557, 75.86742615778944),
-                LatLng(22.714731712192407, 75.88433771465213),
-                LatLng(22.717086037558957, 75.84087599897448),
-                LatLng(22.737158803471615, 75.87081697282667)
-            )
-            val theMap = HashMap<LatLng,String>()
-            theMap[locations[0]]="Jail Rd, Indore GPO, Indore, Madhya Pradesh 452001"
-            theMap[locations[1]]="PVG9+V2P, Near Rajkumar Bridge, Snehlataganj, Indore, Madhya Pradesh 452001"
-            theMap[locations[2]]="EV Urjaa 2nd Floor, ICCC Building, Indore Smart Seed Incubation Centre AICTSL Campus, Chartered Bus Stand, near Geeta Bhawan, Indore, Madhya Pradesh 452001"
-            theMap[locations[3]]="6/6, EV Urjaa Charging station in front of Gurudwara Old Rajmohalla, North Rajmohalla, Ward 23, opposite Gurudwara Guru Nanak Darbar, Rajmohalla, Indore, Madhya Pradesh 452002"
-            theMap[locations[4]]="PVPC+P82, Malwa Mill Rd, Patni Pura, Indore, Madhya Pradesh 452001"
-            for (location in locations) {
-                val markerOption = MarkerOptions()
-                location.let { markerOption.position(it) }
-                markerOption.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE))
-                val marker1 = mGoogleMap?.addMarker(markerOption)
-                if (marker1 != null) {
-                    marker1.tag = theMap[location]?.let {
-                        info_data(
-                            it,
-                            distanceBetween(
-                                lastLocation.latitude,
-                                lastLocation.longitude,
-                                location.latitude,
-                                location.longitude
-                            )
-                        )
+            lifecycleScope.launch {
+                try {
+                    val response = RetrofitClient.instance.getAllData()
+
+                    val twoWheelerLocations = response.twoWheeler.mapNotNull { map ->
+                        val lat = map["latitude"].toDoubleOrNull()
+                        val lon = map["longitude"].toDoubleOrNull()
+                        val address = map["address"] as? String
+                        if (lat != null && lon != null && address != null) {
+                            LocationItem(lat, lon, address)
+                        } else null
                     }
-                    mGoogleMap?.setInfoWindowAdapter(info_window_adaptor(this))
 
-                }
-                else {
-                    Toast.makeText(this, "Unable to get current location", Toast.LENGTH_SHORT).show()
+                    if (twoWheelerLocations.isEmpty()) {
+                        Toast.makeText(this@MainActivity, "No Two Wheeler locations found", Toast.LENGTH_SHORT).show()
+                        return@launch
+                    }
 
+                    // Map LatLng to address
+                    val theMap = HashMap<LatLng, String>()
+                    twoWheelerLocations.forEach {
+                        val latLng = LatLng(it.latitude, it.longitude)
+                        theMap[latLng] = it.address
+                    }
 
+                    mGoogleMap?.clear()
+
+                    // Add orange markers with info window
+                    for (location in theMap.keys) {
+                        val markerOptions = MarkerOptions()
+                            .position(location)
+                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE))
+
+                        val marker = mGoogleMap?.addMarker(markerOptions)
+                        marker?.tag = theMap[location]?.let {
+                            info_data(
+                                it,
+                                distanceBetween(
+                                    lastLocation.latitude,
+                                    lastLocation.longitude,
+                                    location.latitude,
+                                    location.longitude
+                                )
+                            )
+                        }
+                    }
+
+                    mGoogleMap?.setInfoWindowAdapter(info_window_adaptor(this@MainActivity))
+
+                    // Animate camera to nearest location
+                    val currentLatLng = LatLng(lastLocation.latitude, lastLocation.longitude)
+                    var nearestLocation: LatLng? = null
+                    var minDistance = Double.MAX_VALUE
+
+                    theMap.keys.forEach { location ->
+                        val distance = FloatArray(1)
+                        Location.distanceBetween(
+                            currentLatLng.latitude,
+                            currentLatLng.longitude,
+                            location.latitude,
+                            location.longitude,
+                            distance
+                        )
+                        if (distance[0] < minDistance) {
+                            minDistance = distance[0].toDouble()
+                            nearestLocation = location
+                        }
+                    }
+
+                    nearestLocation?.let {
+                        mGoogleMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(it, 15f))
+                    }
+
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    Toast.makeText(this@MainActivity, "Failed to fetch two wheeler locations", Toast.LENGTH_SHORT).show()
                 }
             }
-            val currentLatLng = LatLng(lastLocation.latitude, lastLocation.longitude)
-            var nearestLocation: LatLng? = null
-            var minDistance = Double.MAX_VALUE
-
-            locations.forEach { location ->
-                val distance = FloatArray(1)
-                Location.distanceBetween(currentLatLng.latitude, currentLatLng.longitude,
-                    location.latitude, location.longitude, distance)
-                if (distance[0] < minDistance) {
-                    minDistance = distance[0].toDouble()
-                    nearestLocation = location
-                }
-            }
-            mGoogleMap?.animateCamera(CameraUpdateFactory.newLatLngZoom( LatLng(nearestLocation!!.latitude, nearestLocation!!.longitude), 15f))
-
         }
+
 
         fourWheelerButton.setOnClickListener {
-            val locations = listOf(LatLng(22.75513595140915, 75.88604515378142),
-                LatLng(22.73088976610597, 75.8893107844682),
-                LatLng(22.7205593367236, 75.84741272679648),
-                LatLng(22.711486302110444, 75.85601326912477),
-                LatLng(22.69548195427431, 75.85512854213988))
-            val theMap = HashMap<LatLng,String>()
-            theMap[locations[0]]="FH-228, Sceme No 54, Vijay Nagar, Indore, Madhya Pradesh 452010"
-            theMap[locations[1]]="2, AB Rd, Shree Nagar Main Colony, Anoop Nagar, Indore, Madhya Pradesh 452001"
-            theMap[locations[2]]="Laxmi Building, Police Station, 22, North, Yashwant Ganj, Malharganj, Indore, Madhya Pradesh 452002"
-            theMap[locations[3]]="Priyanka Enterprises, 5/2, Moti Tabela, Indore, Madhya Pradesh 452007"
-            theMap[locations[4]]="Sakaar Apat, 24-26, Manik Bagh Rd, Saifee Nagar, Indore, Madhya Pradesh 452014"
+            lifecycleScope.launch {
+                try {
+                    val response = RetrofitClient.instance.getAllData()
 
+                    val fourWheelerLocations = response.fourWheeler.mapNotNull { map ->
+                        val lat = map["latitude"].toDoubleOrNull()
+                        val lon = map["longitude"].toDoubleOrNull()
+                        val address = map["address"] as? String
 
-            for (location in locations) {
-                val markerOption = MarkerOptions()
-                location.let { markerOption.position(it) }
-                markerOption.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW))
-                val marker1 = mGoogleMap?.addMarker(markerOption)
-                if (marker1 != null) {
-                    marker1.tag = theMap[location]?.let {
-                        info_data(
-                            it,
-                            distanceBetween(
-                                lastLocation.latitude,
-                                lastLocation.longitude,
-                                location.latitude,
-                                location.longitude
-                            )
-                        )
+                        if (lat != null && lon != null && address != null) {
+                            LocationItem(lat, lon, address)
+                        } else {
+                            null // skip invalid entries
+                        }
                     }
-                    mGoogleMap?.setInfoWindowAdapter(info_window_adaptor(this))
 
-                }
-                else {
-                    Toast.makeText(this, "Unable to get current location", Toast.LENGTH_SHORT).show()
+                    // Prepare map LatLng -> address
+                    val theMap = HashMap<LatLng, String>()
+                    fourWheelerLocations.forEach {
+                        val latLng = LatLng(it.latitude, it.longitude)
+                        theMap[latLng] = it.address
+                    }
 
+                    // Clear old markers
+                    mGoogleMap?.clear()
 
+                    // Add markers with yellow icon and info windows
+                    for (location in theMap.keys) {
+                        val markerOptions = MarkerOptions()
+                            .position(location)
+                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW))
+
+                        val marker = mGoogleMap?.addMarker(markerOptions)
+                        marker?.tag = theMap[location]?.let { address ->
+                            info_data(
+                                address,
+                                distanceBetween(
+                                    lastLocation.latitude,
+                                    lastLocation.longitude,
+                                    location.latitude,
+                                    location.longitude
+                                )
+                            )
+                        }
+                    }
+
+                    // Set your custom info window adapter (adjust context)
+                    mGoogleMap?.setInfoWindowAdapter(info_window_adaptor(this@MainActivity))
+
+                    // Find nearest location to current location and move camera
+                    val currentLatLng = LatLng(lastLocation.latitude, lastLocation.longitude)
+                    var nearestLocation: LatLng? = null
+                    var minDistance = Double.MAX_VALUE
+
+                    for (location in theMap.keys) {
+                        val distance = FloatArray(1)
+                        Location.distanceBetween(
+                            currentLatLng.latitude,
+                            currentLatLng.longitude,
+                            location.latitude,
+                            location.longitude,
+                            distance
+                        )
+                        if (distance[0] < minDistance) {
+                            minDistance = distance[0].toDouble()
+                            nearestLocation = location
+                        }
+                    }
+
+                    nearestLocation?.let {
+                        mGoogleMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(it, 15f))
+                    }
+
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    Toast.makeText(
+                        this@MainActivity,
+                        "Failed to fetch locations",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             }
-            val currentLatLng = LatLng(lastLocation.latitude, lastLocation.longitude)
-            var nearestLocation: LatLng? = null
-            var minDistance = Double.MAX_VALUE
-
-            locations.forEach { location ->
-                val distance = FloatArray(1)
-                Location.distanceBetween(currentLatLng.latitude, currentLatLng.longitude,
-                    location.latitude, location.longitude, distance)
-                if (distance[0] < minDistance) {
-                    minDistance = distance[0].toDouble()
-                    nearestLocation = location
-                }
-            }
-            mGoogleMap?.animateCamera(CameraUpdateFactory.newLatLngZoom( LatLng(nearestLocation!!.latitude, nearestLocation!!.longitude), 15f))
-
         }
+
 
 
 
@@ -347,6 +382,24 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
             popupMenu.show()
         }
     }
+
+
+
+
+
+    private fun fetchData() {
+        lifecycleScope.launch {
+            try {
+                val data = RetrofitClient.instance.getAllData()
+                Log.d("API", "Stations: ${data.stations}")
+                Log.d("API", "Four Wheeler: ${data.fourWheeler}")
+                Log.d("API", "Two Wheeler: ${data.twoWheeler}")
+            } catch (e: Exception) {
+                Log.e("API", "Failed to fetch data", e)
+            }
+        }
+    }
+
 
     private fun zoomOnMap(latLng: LatLng, place : String) {
         val newLatLngZoom = CameraUpdateFactory.newLatLngZoom(latLng, 14f)
@@ -382,58 +435,33 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
         var notification =""
 
 
-        val theMap = HashMap<LatLng,String>()
-        theMap[locations[0]]="Jail Rd, Indore GPO, Indore, Madhya Pradesh 452001"
-        theMap[locations[1]]="PVG9+V2P, Near Rajkumar Bridge, Snehlataganj, Indore, Madhya Pradesh 452001"
-        theMap[locations[2]]="EV Urjaa 2nd Floor, ICCC Building, Indore Smart Seed Incubation Centre AICTSL Campus, Chartered Bus Stand, near Geeta Bhawan, Indore, Madhya Pradesh 452001"
-        theMap[locations[3]]="6/6, EV Urjaa Charging station in front of Gurudwara Old Rajmohalla, North Rajmohalla, Ward 23, opposite Gurudwara Guru Nanak Darbar, Rajmohalla, Indore, Madhya Pradesh 452002"
-        theMap[locations[4]]="PVPC+P82, Malwa Mill Rd, Patni Pura, Indore, Madhya Pradesh 452001"
-        theMap[locations[5]]="FH-228, Sceme No 54, Vijay Nagar, Indore, Madhya Pradesh 452010"
-        theMap[locations[6]]="2, AB Rd, Shree Nagar Main Colony, Anoop Nagar, Indore, Madhya Pradesh 452001"
-        theMap[locations[7]]="Laxmi Building, Police Station, 22, North, Yashwant Ganj, Malharganj, Indore, Madhya Pradesh 452002"
-        theMap[locations[8]]="Priyanka Enterprises, 5/2, Moti Tabela, Indore, Madhya Pradesh 452007"
-        theMap[locations[9]]="Sakaar Apat, 24-26, Manik Bagh Rd, Saifee Nagar, Indore, Madhya Pradesh 452014"
-        theMap[locations[10]]="236, Bhawarkua Main Rd, near Anand Super 100, Indrapuri Colony, Bhanwar Kuwa, Indore, Madhya Pradesh 452014"
-        theMap[locations[11]]="Hotel Essentia, near world cup square, Vandana Nagar, Indore, Madhya Pradesh 452015"
-        theMap[locations[12]]="No 11, Nexus Treasure Island, Mahatma Gandhi Rd, Near Treasure Island, South Tukoganj, Indore, Madhya Pradesh 452001"
-        theMap[locations[13]]="Revolt service center, Mahatma Gandhi Rd, Near Indraprastha Tower, Race Course Road, Indore, Madhya Pradesh 452001"
-        theMap[locations[14]]="Dosa Magic, 147 B, Annapurna Rd, near Annapurna Police Station, Moon Palace Colony, Indore, Madhya Pradesh 452009"
-        theMap[locations[15]]="Aastha Talkies, Near 452010, Patni Pura Rd, Nanda Nagar, Indore, Madhya Pradesh 452011"
-        theMap[locations[16]]="PVG8+RX6 Pather Godown, Near Rajkumar Bridge, Snehlataganj, Indore, Madhya Pradesh 452001"
-        theMap[locations[17]]="Shop No. 17, Shekhar Planet, Nom Nom Chinese, Vijay Nagar, Indore, Madhya Pradesh 452001"
-        theMap[locations[18]]="PR7Q+36W, Dhar Rd, Labriya Bheru, Raj Mohalla, Indore, Madhya Pradesh 452002"
-        theMap[locations[19]]="Nexus Treasure Island, opposite Ravindra Natya Grah, Flim Colony, South Tukoganj, Indore, Madhya Pradesh 452001"
-        theMap[locations[20]]="PV6J+JCP, M G Road, Opposite M Y H, M G Marg, MY Hospital Rd, Opposite Indrasan Building, Jaora Compound, Ushaganj, Murai Mohalla, Indore, Madhya Pradesh 452001 1, PV6J+JCP, Jaora Compound Main Rd, Murai Mohalla, Indore, Madhya Pradesh 452001"
-        theMap[locations[21]]="Electronic Complex, 2-A, opp. IDEA CELLUAR LTD, Pardesipura, Indore, Madhya Pradesh 452010"
-        theMap[locations[22]]="Sech.No-94, Plot No 172 , Ground Floor, 172, Main Rd, opposite Brilliant Convention Centre, near HDFC Bank, Scheme No 113, Indore, Madhya Pradesh 452010"
-        theMap[locations[23]]="2563-E, Ring Rd, Sector E, Sudama Nagar, Indore, Madhya Pradesh 452009"
-        theMap[locations[24]]="Sheraton Grand Palace, Bypass Road, Omaxe City 1, Mayakhedi, Indore, Madhya Pradesh 452016"
-        theMap[locations[25]]="158, Sangam Nagar, Kanyakubj Nagar, Indore, Madhya Pradesh 452006"
-        theMap[locations[26]]="H-2, Marriott Hotel, Maguda Nagar, Scheme No 54, Indore, Madhya Pradesh 452010"
-        theMap[locations[27]]="Wah Wah Chap IT Park, 308, Pipliya Rao Ring Rd, Ambicapuri Colony, Ambikapuri, Indore, Madhya Pradesh 452014"
-        theMap[locations[28]]="RVC2+P6C, INDORE UJJAIN STATE HIGHWAY VILLAGE BAROLI, DIST, near TOLL PLAZA, Indore, 453555"
-        theMap[locations[29]]="93/94 New Loha Mandi, Niranjanpur Cir, New Loha Mandi, Dewas Naka, Lasudia Mori, Indore, Madhya Pradesh 453771"
-        theMap[locations[30]]="MVW4+P2F, Manik Bagh Rd, Nai Duniya, Saifee Nagar, Indore, Madhya Pradesh 452014"
-        theMap[locations[31]]="Near 452010, Patni Pura Rd, Nanda Nagar, LIG Main Rd, LIG Colony, Indore, Madhya Pradesh 452010"
-        theMap[locations[32]]="FH 228, Scheme no. 54, Vijay Nagar, Indore, Madhya Pradesh 452010"
-        theMap[locations[33]]="50, Malwa Mill Rd, Malwa Mill Square, Malwa Mill, Indore, Madhya Pradesh 452001"
-        theMap[locations[34]]="RWCH+9PM, Baans Balli walo ke pass, AB Rd, Manglaya Sadak, Indore, Madhya Pradesh 453771"
-        theMap[locations[35]]="Ground Floor, B Zone, Nipania, Indore, Madhya Pradesh 452012"
-        theMap[locations[36]]="PWX3+XWR, Pushp Vihar Colony, Scheme No 131, Indore, Madhya Pradesh 452010"
-        theMap[locations[37]]="Infront of, 580, Mahatma Gandhi Rd, near Indraprastha Tower, Race Course Road, Indore, Madhya Pradesh 452001"
-        theMap[locations[38]]="PVCH+5P3, South Tukoganj, Indore, Madhya Pradesh 452001"
-        theMap[locations[39]]="Treebo Trend, omni palace hotel, Ratlam Kothi Main Rd, Ratlam Kothi, Indore, Madhya Pradesh 452001"
-        theMap[locations[40]]="1, Khalsa Chowk Rd, Bulandshahr, Vijay Nagar, Indore, Madhya Pradesh 452010"
-        theMap[locations[41]]="Type-C, Plot No . 08, Scheme No 78 - III, Sector D, Slice 4, Araniya, Scheme 78, Vijay Nagar, Indore, Madhya Pradesh 452010"
-        theMap[locations[42]]="GB-2 & 4 , Divine Valley , Dewas Road , Ujjain , M.P 456010, Ujjain, 456001"
-        theMap[locations[43]]="Ujjain, Madhya Pradesh 456006"
-        theMap[locations[44]]="Ground Floor, Indore Rd, near Dhaba, Ujjain, Gothada, Madhya Pradesh 456010"
-        theMap[locations[45]]="Malay Travels, 74, Ujjain Dewas Rd, Sant Nagar, Ujjain, Madhya Pradesh 456010"
-        theMap[locations[46]]="58 arvind nagar agar road, Ujjain, Madhya Pradesh 456001"
-        theMap[locations[47]]="62, Amar Singh Marg, opposite Bank of Baroda, Freeganj, Madhav Nagar, Ujjain, Madhya Pradesh 456010"
-        theMap[locations[48]]="AICTSL charging Station S.G.S.I.T.S. Near Golden Gate"
-   
+        val theMap = HashMap<LatLng, String>()
+        lifecycleScope.launch {
+            try {
+                val response = RetrofitClient.instance.getAllData()  // suspend function call
 
+                val theMap = HashMap<LatLng, String>()
+                response.stations.forEach { map ->
+                    val lat = map["latitude"].toDoubleOrNull()
+                    val lon = map["longitude"].toDoubleOrNull()
+                    val address = map["address"] as? String
+                    if (lat != null && lon != null && address != null) {
+                        val latLng = LatLng(lat, lon)
+                        theMap[latLng] = address
+                    }
+                }
+                Log.d("API_RESPONSE", "theMap contents:")
+                theMap.forEach { (latLng, address) ->
+                    Log.d("API_RESPONSE", "Location: $latLng -> Address: $address")
+                }
+
+                // Now you can use theMap here, e.g., add markers on the map
+
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Toast.makeText(this@MainActivity, "Failed to fetch data", Toast.LENGTH_SHORT).show()
+            }
+        }
 
 
         // Using the lastLocation
@@ -445,13 +473,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
                 Manifest.permission.ACCESS_COARSE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED
         ) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
             return
         }
         fusedLocationClient.lastLocation.addOnSuccessListener(this) { location ->
@@ -462,16 +483,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
                 locations.forEach { boundsBuilder.include(it) }
                 val bounds = boundsBuilder.build()
                 mGoogleMap?.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, 100))
-
-//                for (location in locations) {
-//                    val marker = mGoogleMap!!.addMarker(
-//                        MarkerOptions().position(location)
-//                            .title("Marker at ${location.latitude}, ${location.longitude}")
-//                    )
-//                    if (marker != null) {
-//                        markerLatLngMap[marker] = location
-//                    }
-//                }
 
                 // Using lastLocation to find the nearest location
                 val currentLatLng = LatLng(lastLocation.latitude, lastLocation.longitude)
@@ -662,3 +673,14 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
     }
     override fun onMarkerClick(p0: com.google.android.gms.maps.model.Marker) = false
 }
+
+fun Any?.toDoubleOrNull(): Double? {
+    return when (this) {
+        is Double -> this
+        is Float -> this.toDouble()
+        is Number -> this.toDouble()
+        is String -> this.toDoubleOrNull()
+        else -> null
+    }
+}
+
